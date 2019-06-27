@@ -9,3 +9,6 @@ data/
 
 # ignore .sh files
 *.sh
+
+# ignore output
+output/
