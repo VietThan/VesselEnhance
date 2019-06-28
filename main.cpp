@@ -9,6 +9,7 @@
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
+#include "itkExtractImageFilter.h"
 
 #include "itkHessianToObjectnessMeasureImageFilter.h"
 #include "itkMultiScaleHessianBasedMeasureImageFilter.h"
@@ -23,13 +24,14 @@
 using namespace itk;
 
 //helper functions
-std::string makeInputFileName (std::string &filename, std::string &filetype);
+std::string makeInputFileName (const std::string &filename, const std::string &filetype);
 std::string makeOutputFileName (const std::string &filename, const std::string &filetype, 
 				const float &alpha, const float &beta, const float &gamma, 
 				const double &min, const double &max, const unsigned int &step);
 
 
 template <typename T> std::string returnPointString(const T &number);
+void extract2DNormal (const std::string &filename, const std::string &filetype);
 
 // 5 arguments:
 // 1 - filename
@@ -70,10 +72,10 @@ int main(int argc, char * argv []){
 		std::cout << "Not enough arguments, went with default" << std::endl;
 		filename = "Smallfield_OCT_Angiography_Volume_fovea"; //filename in data/
 		filetype = ".nii";
-		alpha = 0.1;
-		beta = 8.0;
+		alpha = 10;
+		beta = 0.5;
 		gamma = 500;
-		sigmaMinimum = 0.5;
+		sigmaMinimum = 1;
 		sigmaMaximum = 10;
 		numberOfSigmaSteps = 10;
 	}
@@ -85,7 +87,7 @@ int main(int argc, char * argv []){
 	
 	auto stop = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-	std::cout << duration.count() << " seconds for reading in the file and creating constants"<<std::endl;
+	std::cout << duration.count() << " milliseconds for reading in the file and creating constants"<<std::endl;
 
 
   	
@@ -104,7 +106,13 @@ int main(int argc, char * argv []){
 
  	stop = std::chrono::high_resolution_clock::now();
 	duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-	std::cout << duration.count() << " seconds for setting image and reader"<<std::endl;
+	std::cout << duration.count() << " milliseconds for setting image and reader"<<std::endl;
+
+	ImageType::Pointer image = reader->GetOutput();
+	ImageType::RegionType region = image->GetLargestPossibleRegion();
+	ImageType::SizeType size = region.GetSize();
+	std::cout << size << std::endl;
+
 
   	using HessianPixelType = itk::SymmetricSecondRankTensor< double, Dimension >;
   	using HessianImageType = itk::Image< HessianPixelType, Dimension >;
@@ -118,7 +126,7 @@ int main(int argc, char * argv []){
 
  	stop = std::chrono::high_resolution_clock::now();
 	duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-	std::cout << duration.count() << " seconds for setting Hessian output image"<<std::endl;
+	std::cout << duration.count() << " milliseconds for setting Hessian output image"<<std::endl;
 
 
   	using MultiScaleEnhancementFilterType = itk::MultiScaleHessianBasedMeasureImageFilter< ImageType, HessianImageType, ImageType >;
@@ -132,7 +140,7 @@ int main(int argc, char * argv []){
 
  	stop = std::chrono::high_resolution_clock::now();
 	duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-	std::cout << duration.count() << " seconds for setting up the Hessian filter" <<std::endl;
+	std::cout << duration.count() << " milliseconds for setting up the Hessian filter" <<std::endl;
 
 	//
   	using OutputImageType = itk::Image< float, Dimension >;
@@ -140,13 +148,13 @@ int main(int argc, char * argv []){
   	RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
   	rescaleFilter->SetInput( multiScaleEnhancementFilter->GetOutput() );
 	
-	//rescale to 0 and 255
+	//rescale to 0 and 255 for output
 	rescaleFilter->SetOutputMinimum(desiredMinimum);
 	rescaleFilter->SetOutputMaximum(desiredMaximum);
 
  	stop = std::chrono::high_resolution_clock::now();
 	duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-	std::cout << duration.count() << " seconds for setting min max intensity"<< std::endl;
+	std::cout << duration.count() << " milliseconds for setting min max intensity"<< std::endl;
 
 	//Setting up the output writer
   	using WriterType = itk::ImageFileWriter< OutputImageType >;//setting up type for writer
@@ -156,8 +164,16 @@ int main(int argc, char * argv []){
 	
 	stop = std::chrono::high_resolution_clock::now();
 	duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-	std::cout << duration.count() << " seconds for setting up writer" << std::endl;
-  	
+	std::cout << duration.count() << " milliseconds for setting up writer" << std::endl;
+
+
+	//extract 2d
+	extract2DNormal (filename,filetype);
+  	stop = std::chrono::high_resolution_clock::now();
+	duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+	std::cout << duration.count() << " milliseconds for extracting2D" << std::endl;
+
+
 	//Write to file
   	try {
     	writer->Update();
@@ -175,7 +191,7 @@ int main(int argc, char * argv []){
 }
 
 //Creating the input file name for a nifti
-std::string makeInputFileName (std::string &filename, std::string &filetype){
+std::string makeInputFileName (const std::string &filename, const std::string &filetype){
 	std::string inputFileName = "../data/";
 	inputFileName.append(filename);
 	inputFileName.append(filetype);
@@ -212,4 +228,61 @@ template <typename T> std::string returnPointString(const T &number){
 
     s.replace(s.find('.'), 1, "p");
     return s;
+}
+
+void extract2DNormal (const std::string &filename, const std::string &filetype){
+	using InputPixelType = float;
+	using OutputPixelType = float;
+
+	using InputImageType = itk::Image< InputPixelType, 3 >;
+	using OutputImageType = itk::Image< OutputPixelType, 2>;
+
+	using ReaderType = itk::ImageFileReader< InputImageType >;
+	using WriterType = itk::ImageFileWriter< OutputImageType >;
+
+	std::string inputFileName = makeInputFileName(filename, filetype);
+	std::string outputName = "../output/";
+	outputName.append(filename);
+	outputName.append("_ChosenMiddleSlice").append(".tif");
+
+	ReaderType::Pointer reader = ReaderType::New();
+	WriterType::Pointer writer = WriterType::New();
+
+
+	reader->SetFileName( inputFileName );
+	writer->SetFileName( outputName );
+	reader->Update();
+
+	using FilterType = itk::ExtractImageFilter< InputImageType, OutputImageType > ;
+	FilterType::Pointer filter = FilterType::New();
+	filter->InPlaceOn();
+	filter->SetDirectionCollapseToSubmatrix();
+
+	InputImageType::RegionType inputRegion = reader->GetOutput()->GetLargestPossibleRegion();
+
+	InputImageType::SizeType size = inputRegion.GetSize();
+	size[0] = 0;
+	std::cout << size << std::endl;
+
+	InputImageType::IndexType start = inputRegion.GetIndex();
+	const unsigned int sliceNumber = 250;
+	start[0] = sliceNumber;
+	std::cout << start << std::endl;
+
+	InputImageType::RegionType desiredRegion;
+	desiredRegion.SetSize( size );
+	desiredRegion.SetIndex( start );
+
+	filter->SetExtractionRegion( desiredRegion );
+
+  	filter->SetInput( reader->GetOutput() );
+  	writer->SetInput( filter->GetOutput() );
+
+	try{
+		writer->Update();
+	} catch (itk::ExceptionObject &err) {
+		std::cerr << "ExceptionObject caught" << std::endl;
+		std::cerr << err << std::endl;
+	}
+
 }
