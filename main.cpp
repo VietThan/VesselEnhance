@@ -31,7 +31,6 @@ std::string makeOutputFileName (const std::string &filename, const std::string &
 
 
 template <typename T> std::string returnPointString(const T &number);
-void extract2DNormal (const std::string &filename, const std::string &filetype);
 
 // 5 arguments:
 // 1 - filename
@@ -43,8 +42,9 @@ void extract2DNormal (const std::string &filename, const std::string &filetype);
 // 7 - max
 // 8 - step
 int main(int argc, char * argv []){
+	std::cout << "Starting Hessian filter" << std::endl;
 
-	if (argc > 8){
+	if (argc > 9){
 		std::cout << "too many arguments" << std::endl;
 		return EXIT_FAILURE;
 	}
@@ -59,15 +59,15 @@ int main(int argc, char * argv []){
 	constexpr float desiredMinimum = 0.0;
 	constexpr float desiredMaximum = 255.0;
 	
-	if (argc == 8){
-		filename = argv[0];
-		filetype = argv[1];
-		alpha = std::stof(argv[2]);
-		beta = std::stof(argv[3]);
-		gamma = std::stof(argv[4]);
-		sigmaMinimum = std::atof(argv[5]);
-		sigmaMaximum = std::atof(argv[6]);
-		numberOfSigmaSteps = atoi(argv[7]);
+	if (argc == 9){
+		filename = argv[1];
+		filetype = argv[2];
+		alpha = std::stof(argv[3]);
+		beta = std::stof(argv[4]);
+		gamma = std::stof(argv[5]);
+		sigmaMinimum = std::atof(argv[6]);
+		sigmaMaximum = std::atof(argv[7]);
+		numberOfSigmaSteps = atoi(argv[8]);
 	} else {
 		std::cout << "Not enough arguments, went with default" << std::endl;
 		filename = "Smallfield_OCT_Angiography_Volume_fovea"; //filename in data/
@@ -167,13 +167,6 @@ int main(int argc, char * argv []){
 	std::cout << duration.count() << " milliseconds for setting up writer" << std::endl;
 
 
-	//extract 2d
-	extract2DNormal (filename,filetype);
-  	stop = std::chrono::high_resolution_clock::now();
-	duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-	std::cout << duration.count() << " milliseconds for extracting2D" << std::endl;
-
-
 	//Write to file
   	try {
     	writer->Update();
@@ -230,59 +223,4 @@ template <typename T> std::string returnPointString(const T &number){
     return s;
 }
 
-void extract2DNormal (const std::string &filename, const std::string &filetype){
-	using InputPixelType = float;
-	using OutputPixelType = float;
 
-	using InputImageType = itk::Image< InputPixelType, 3 >;
-	using OutputImageType = itk::Image< OutputPixelType, 2>;
-
-	using ReaderType = itk::ImageFileReader< InputImageType >;
-	using WriterType = itk::ImageFileWriter< OutputImageType >;
-
-	std::string inputFileName = makeInputFileName(filename, filetype);
-	std::string outputName = "../output/";
-	outputName.append(filename);
-	outputName.append("_ChosenMiddleSlice").append(".tif");
-
-	ReaderType::Pointer reader = ReaderType::New();
-	WriterType::Pointer writer = WriterType::New();
-
-
-	reader->SetFileName( inputFileName );
-	writer->SetFileName( outputName );
-	reader->Update();
-
-	using FilterType = itk::ExtractImageFilter< InputImageType, OutputImageType > ;
-	FilterType::Pointer filter = FilterType::New();
-	filter->InPlaceOn();
-	filter->SetDirectionCollapseToSubmatrix();
-
-	InputImageType::RegionType inputRegion = reader->GetOutput()->GetLargestPossibleRegion();
-
-	InputImageType::SizeType size = inputRegion.GetSize();
-	size[0] = 0;
-	std::cout << size << std::endl;
-
-	InputImageType::IndexType start = inputRegion.GetIndex();
-	const unsigned int sliceNumber = 250;
-	start[0] = sliceNumber;
-	std::cout << start << std::endl;
-
-	InputImageType::RegionType desiredRegion;
-	desiredRegion.SetSize( size );
-	desiredRegion.SetIndex( start );
-
-	filter->SetExtractionRegion( desiredRegion );
-
-  	filter->SetInput( reader->GetOutput() );
-  	writer->SetInput( filter->GetOutput() );
-
-	try{
-		writer->Update();
-	} catch (itk::ExceptionObject &err) {
-		std::cerr << "ExceptionObject caught" << std::endl;
-		std::cerr << err << std::endl;
-	}
-
-}
