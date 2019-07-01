@@ -72,11 +72,11 @@ int main(int argc, char * argv []){
 		std::cout << "Not enough arguments, went with default" << std::endl;
 		filename = "Smallfield_OCT_Angiography_Volume_fovea"; //filename in data/
 		filetype = ".nii";
-		alpha = 0.1;
-		beta = 10;
+		alpha = 0.5;
+		beta = 50;
 		gamma = 500;
 		sigmaMinimum = 0.5;
-		sigmaMaximum = 10;
+		sigmaMaximum = 13;
 		numberOfSigmaSteps = 12;
 	}
 
@@ -95,7 +95,7 @@ int main(int argc, char * argv []){
 
 
 	//Setting up the image reader of the particular type
-	using PixelType = float;
+	using PixelType = short;
   	using ImageType = itk::Image< PixelType, Dimension >;
   	using ReaderType = itk::ImageFileReader< ImageType >;
 
@@ -113,7 +113,7 @@ int main(int argc, char * argv []){
 	ImageType::SizeType size = region.GetSize();
 
 
-  	using HessianPixelType = itk::SymmetricSecondRankTensor< double, Dimension >;
+  	using HessianPixelType = itk::SymmetricSecondRankTensor< short, Dimension >;
   	using HessianImageType = itk::Image< HessianPixelType, Dimension >;
   	using ObjectnessFilterType = itk::HessianToObjectnessMeasureImageFilter< HessianImageType, ImageType >;
   	ObjectnessFilterType::Pointer objectnessFilter = ObjectnessFilterType::New();
