@@ -72,12 +72,12 @@ int main(int argc, char * argv []){
 		std::cout << "Not enough arguments, went with default" << std::endl;
 		filename = "Smallfield_OCT_Angiography_Volume_fovea"; //filename in data/
 		filetype = ".nii";
-		alpha = 10;
-		beta = 0.5;
+		alpha = 0.1;
+		beta = 10;
 		gamma = 500;
-		sigmaMinimum = 1;
+		sigmaMinimum = 0.5;
 		sigmaMaximum = 10;
-		numberOfSigmaSteps = 10;
+		numberOfSigmaSteps = 12;
 	}
 
 	//timing
@@ -111,7 +111,6 @@ int main(int argc, char * argv []){
 	ImageType::Pointer image = reader->GetOutput();
 	ImageType::RegionType region = image->GetLargestPossibleRegion();
 	ImageType::SizeType size = region.GetSize();
-	std::cout << size << std::endl;
 
 
   	using HessianPixelType = itk::SymmetricSecondRankTensor< double, Dimension >;
@@ -176,8 +175,8 @@ int main(int argc, char * argv []){
     	}
 	
 	stop = std::chrono::high_resolution_clock::now();
-	duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-	std::cout << duration.count() << " seconds when file written out succesfully" << std::endl;
+	duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+	std::cout << duration.count() << " milliseconds when file written out succesfully" << std::endl;
   	return EXIT_SUCCESS;
 	
 

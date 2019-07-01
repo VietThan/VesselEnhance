@@ -12,3 +12,6 @@ data/
 
 # ignore output
 output/
+
+# ignore log
+.log
