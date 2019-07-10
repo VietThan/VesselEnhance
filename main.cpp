@@ -72,9 +72,9 @@ int main(int argc, char * argv []){
 		std::cout << "Not enough arguments, went with default" << std::endl;
 		filename = "Smallfield_OCT_Angiography_Volume_fovea"; //filename in data/
 		filetype = ".nii";
-		alpha = 0.5;
-		beta = 50;
-		gamma = 500;
+		alpha = 0.1;
+		beta = 10;
+		gamma = 100;
 		sigmaMinimum = 0.5;
 		sigmaMaximum = 13;
 		numberOfSigmaSteps = 12;
@@ -160,6 +160,7 @@ int main(int argc, char * argv []){
   	WriterType::Pointer writer = WriterType::New();//initialize new writer pointer
   	writer->SetFileName( outputFileName );//set filename for writer
   	writer->SetInput( rescaleFilter->GetOutput() );//
+	writer->SetUseCompression( true );
 	
 	stop = std::chrono::high_resolution_clock::now();
 	duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
