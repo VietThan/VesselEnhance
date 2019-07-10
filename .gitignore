@@ -1,5 +1,8 @@
-# ignore asv files
+gnore asv files
 *.asv
+
+# ignore .nii files
+*.nii
 
 # ignore .sh files
 *.sh
