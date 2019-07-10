@@ -9,4 +9,4 @@ There should only be one but was separated into 2 parts, both is needed. One app
  - itkHessianToObjectnessMeasureImageFilter.h<br>
  - itkMultiScaleHessianBasedMeasureImageFilter.h<br>
 ## Data example<br>
-Smallfield fovea angiography provided by the Diagnostic Imaging and Image-Guided Interventions Lab under Yuankai Tao, Vanderbilt University<br>
+Smallfield fovea angiography provided by the Diagnostic Imaging and Image-Guided Interventions Lab under Yuankai Tao, Vanderbilt University. 2019.<br>
