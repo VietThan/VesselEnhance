@@ -3,6 +3,7 @@ gnore asv files
 
 # ignore .nii files
 *.nii
+*.nii.gz
 
 # ignore .sh files
 *.sh

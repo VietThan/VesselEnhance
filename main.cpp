@@ -72,12 +72,12 @@ int main(int argc, char * argv []){
 		std::cout << "Not enough arguments, went with default" << std::endl;
 		filename = "Smallfield_OCT_Angiography_Volume_fovea"; //filename in data/
 		filetype = ".nii";
-		alpha = 0.1;
-		beta = 10;
-		gamma = 100;
+		alpha = 0.8;
+		beta = 1;
+		gamma = 250;
 		sigmaMinimum = 0.5;
-		sigmaMaximum = 13;
-		numberOfSigmaSteps = 12;
+		sigmaMaximum = 12;
+		numberOfSigmaSteps = 11;
 	}
 
 	//timing
@@ -95,7 +95,7 @@ int main(int argc, char * argv []){
 
 
 	//Setting up the image reader of the particular type
-	using PixelType = short;
+	using PixelType = float;
   	using ImageType = itk::Image< PixelType, Dimension >;
   	using ReaderType = itk::ImageFileReader< ImageType >;
 
@@ -113,7 +113,7 @@ int main(int argc, char * argv []){
 	ImageType::SizeType size = region.GetSize();
 
 
-  	using HessianPixelType = itk::SymmetricSecondRankTensor< short, Dimension >;
+  	using HessianPixelType = itk::SymmetricSecondRankTensor< float, Dimension >;
   	using HessianImageType = itk::Image< HessianPixelType, Dimension >;
   	using ObjectnessFilterType = itk::HessianToObjectnessMeasureImageFilter< HessianImageType, ImageType >;
   	ObjectnessFilterType::Pointer objectnessFilter = ObjectnessFilterType::New();
@@ -160,7 +160,7 @@ int main(int argc, char * argv []){
   	WriterType::Pointer writer = WriterType::New();//initialize new writer pointer
   	writer->SetFileName( outputFileName );//set filename for writer
   	writer->SetInput( rescaleFilter->GetOutput() );//
-	writer->SetUseCompression( true );
+	//writer->SetUseCompression( true );
 	
 	stop = std::chrono::high_resolution_clock::now();
 	duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
