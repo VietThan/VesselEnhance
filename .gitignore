@@ -7,6 +7,8 @@ gnore asv files
 
 # ignore .sh files
 *.sh
+*.log
+*.out
 
 # ignore output
 output/

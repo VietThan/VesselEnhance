@@ -1,0 +1,3 @@
+SLURM_JOBID:  9985412
+SLURM_ARRAY_TASK_ID: 
+/var/spool/slurmd.cn205/job9985412/slurm_script: line 13: 27772 Illegal instruction     ./VesselEnhance volume_250_250_200_rescaled ".nii.gz" 0.8 10 250 1.5 10 17

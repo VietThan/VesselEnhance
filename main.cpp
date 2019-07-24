@@ -177,7 +177,7 @@ int main(int argc, char * argv []){
 	
 	stop = std::chrono::high_resolution_clock::now();
 	duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-	std::cout << duration.count() << " milliseconds when file written out succesfully" << std::endl;
+	std::cout << duration.count() << " milliseconds when " << outputFileName << " written out succesfully" << std::endl;
   	return EXIT_SUCCESS;
 	
 
