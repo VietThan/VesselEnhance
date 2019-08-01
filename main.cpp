@@ -93,6 +93,7 @@ int main(int argc, char * argv []){
   	
 	std::string outputFileName = makeOutputFileName(filename, filetype, alpha, beta, gamma, sigmaMinimum, sigmaMaximum, numberOfSigmaSteps);
 
+	std::cout << "Output filename is: "<< outputFileName << std::endl;
 
 	//Setting up the image reader of the particular type
 	using PixelType = float;
@@ -215,12 +216,15 @@ std::string makeOutputFileName  (const std::string &filename, const std::string 
 }
 
 template <typename T> std::string returnPointString(const T &number){
-    std::stringstream stream;
-    stream << std::fixed << std::setprecision(1) << number;
-    std::string s = stream.str();
+	int precision;
+	precision = (number < 0.1) ? 3 : 1; 
+	
+	std::stringstream stream;
+    	stream << std::fixed << std::setprecision(precision) << number;
+    	std::string s = stream.str();
 
-    s.replace(s.find('.'), 1, "p");
-    return s;
+    	s.replace(s.find('.'), 1, "p");
+    	return s;
 }
 
 
