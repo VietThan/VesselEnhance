@@ -37,6 +37,14 @@ There should only be one but was separated into 2 parts, both is needed. One app
 ## Data example
 Smallfield fovea angiography provided by the Diagnostic Imaging and Image-Guided Interventions Lab under Yuankai Tao, Vanderbilt University. 2019.
 
+## Related repositories:
+
+In various state of unfinished to complete:
+- [Vasculature Assessment](https://github.com/VietThan/VasculatureAssessment): Scripts for quantitative assesment of (retinal) microvasculature
+- [FrangiFilter with MatLab](https://github.com/VietThan/FrangiFilter)
+- [Histogram Slice](https://github.com/VietThan/HistogramSlice): Using ITK library to extract individual slice of a volume and histogram match filter it with the middle slice
+- [Useful ITK/c3d scripts and commands](https://github.com/VietThan/ITKscripts)
+
 ## Author and Acknowledgements
 Author: Viet Than, Department of EECS, Vanderbilt University, US.<br>
 Supervisor: Ipek Oguz, Prof. Department of EECS, Vanderbilt University, US.
